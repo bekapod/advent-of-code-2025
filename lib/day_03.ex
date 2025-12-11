@@ -6,27 +6,24 @@ defmodule AdventOfCode.Day03 do
     |> Enum.map(fn bank -> bank |> String.graphemes() |> Enum.map(&String.to_integer/1) end)
   end
 
-  @spec solve(String.t()) :: integer()
-  def solve(file_name) do
+  @spec solve(String.t(), integer()) :: integer()
+  def solve(file_name, max_number_of_banks) do
     file_name
     |> parse_input()
     |> Enum.map(fn bank ->
-      bank
-      |> Enum.slice(0..-2//1)
-      |> Enum.with_index()
-      |> Enum.max_by(fn {value, _index} -> value end)
-      |> then(fn {value, index} ->
-        next = bank |> Enum.drop(index + 1) |> Enum.max()
-
-        value * 10 + next
+      Enum.reduce(max_number_of_banks..1//-1, {bank, []}, fn n,
+                                                             {remaining_banks, selected_banks} ->
+        remaining_banks
+        |> Enum.slice(0..-n//1)
+        |> Enum.with_index()
+        |> Enum.max_by(fn {value, _index} -> value end)
+        |> then(fn {value, index} ->
+          {Enum.drop(remaining_banks, index + 1), [value | selected_banks]}
+        end)
       end)
+      |> then(fn {_remaining, selected} -> Enum.reverse(selected) end)
     end)
+    |> Enum.map(&Integer.undigits/1)
     |> Enum.sum()
-  end
-
-  @spec actually_solve(String.t()) :: integer()
-  def actually_solve(file_name) do
-    file_name
-    |> parse_input()
   end
 end
