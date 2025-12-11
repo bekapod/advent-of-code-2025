@@ -17,19 +17,55 @@ defmodule AdventOfCode.Day04 do
     |> Map.new()
   end
 
-  @spec solve(String.t()) :: integer()
-  def solve(file_name) do
-    grid = file_name |> parse_input()
+  defp remove_paper(grid, removed_count, once \\ false)
 
-    grid
-    |> Enum.filter(fn {_position, cell} -> cell == "@" end)
-    |> Enum.count(fn {{row, col}, _cell} ->
-      neighbours_with_paper_count =
-        Enum.count(@directions, fn {dr, dc} ->
-          Map.get(grid, {row + dr, col + dc}) == "@"
+  defp remove_paper(grid, removed_count, once) do
+    new_grid =
+      Map.new(grid, fn {{row, col}, cell} ->
+        case cell do
+          "@" ->
+            neighbours_with_paper_count =
+              Enum.count(@directions, fn {dr, dc} ->
+                Map.get(grid, {row + dr, col + dc}) == "@"
+              end)
+
+            new_cell = if neighbours_with_paper_count < 4, do: "x", else: "@"
+
+            {{row, col}, new_cell}
+
+          _ ->
+            {{row, col}, cell}
+        end
+      end)
+
+    newly_removed = Enum.count(new_grid, fn {_position, cell} -> cell == "x" end)
+
+    if newly_removed == 0 or once do
+      {removed_count + newly_removed, new_grid}
+    else
+      reset_grid =
+        Map.new(new_grid, fn {position, cell} ->
+          {position, if(cell == "x", do: ".", else: cell)}
         end)
 
-      neighbours_with_paper_count < 4
-    end)
+      remove_paper(
+        reset_grid,
+        removed_count + newly_removed
+      )
+    end
+  end
+
+  @spec solve(String.t()) :: integer()
+  def solve(file_name) do
+    {removed_count, _new_grid} = file_name |> parse_input() |> remove_paper(0, true)
+
+    removed_count
+  end
+
+  @spec loop_solve(String.t()) :: integer()
+  def loop_solve(file_name) do
+    {removed_count, _new_grid} = file_name |> parse_input() |> remove_paper(0)
+
+    removed_count
   end
 end

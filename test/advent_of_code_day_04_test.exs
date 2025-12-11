@@ -5,4 +5,8 @@ defmodule AdventOfCodeDay04Test do
   test "solves example" do
     assert AdventOfCode.Day04.solve("inputs/day_04_example.txt") == 13
   end
+
+  test "solves example with loop" do
+    assert AdventOfCode.Day04.loop_solve("inputs/day_04_example.txt") == 43
+  end
 end
